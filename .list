@@ -1,0 +1,6 @@
+#!/bin/bash
+
+in="${1%.pem}"
+in="${in%.}"
+openssl x509 -noout -text -in "$in.pem"
+openssl verify -CAfile "$in.pem" "$in.pem"

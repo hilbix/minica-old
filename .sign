@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$1" ]
+then
+        echo "Usage: `basename "$0"` key filename [bits]"
+        echo "Create a signed certificate in filename.  CN is set to filename."
+        exit 1
+fi
+if [ -f "$2.key" -o -f "$2.crt" -o -f "$2.pem" -o -f "$2.pub" ]
+then
+        echo "already exists: $2"
+        exit 1
+fi
+ca="${1%.pem}"
+ca="${ca%.}"
+if [ ! -f "$ca.pem" -o ! -f "$ca.pub" ]
+then
+        echo "missing $ca.pem"
+        exit 1
+fi
+
+
+openssl genrsa -out "$2.key" "${3:-1024}"
+openssl req -config openssl.cnf -subj "/CN=$2" -new -key "$2.key" |
+openssl x509 -req -days 9999 -CA "$ca.pem" -CAserial "$ca.srl" -CAcreateserial -out "$2.crt"
+
+if [ -n "$2.crt" ]
+then
+        cat "$2.crt" "$2.key" "$ca.pub" > "$2.pem"
+        cat "$2.crt" "$ca.pub" > "$2.pub"
+fi
+
+echo "private: key $2.key certificate $2.pem"
+echo "public:  key $2.pub certificate $2.crt"
