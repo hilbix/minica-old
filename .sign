@@ -22,9 +22,10 @@ then
 fi
 
 
+days="$[(2147480000-$(date +%s))/24/60/60]"
 openssl genrsa -out "$2.key" "${3:-1024}"
 openssl req -config openssl.cnf -subj "/CN=$2" -new -key "$2.key" |
-openssl x509 -req -days 9999 -CA "$ca.pem" -CAserial "$ca.srl" -CAcreateserial -out "$2.crt"
+openssl x509 -req -days $days -CA "$ca.pem" -CAserial "$ca.srl" -CAcreateserial -out "$2.crt"
 
 if [ -n "$2.crt" ]
 then
